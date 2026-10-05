@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Interactive Bloch-sphere demo of spin-1/2 precession in a uniform magnetic field: what rotates, why energy eigenstates don't, and where the classical vector picture breaks down.">
+<title>Spin Precession: What Rotates?</title>
+<style>
+:root{
+  color-scheme:light dark;
+  --text-primary:#1f1e1d;--text-secondary:#5f5e5a;--text-muted:#76756f;
+  --surface-1:#f1efe8;--surface-2:#ffffff;
+  --border:rgba(0,0,0,.12);--border-strong:rgba(0,0,0,.25);
+  --fill-accent:#378ADD;--bg-accent:#E6F1FB;--text-accent:#185FA5;--border-accent:#378ADD;
+  --coral:#D85A30;--purple:#7F77DD;--teal:#1D9E75;--e-fill:#7F77DD;
+  --radius:8px;--font-mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root{
+  --text-primary:#f1efe8;--text-secondary:#b4b2a9;--text-muted:#9b9992;
+  --surface-1:#2c2c2a;--surface-2:#1f1e1d;
+  --border:rgba(255,255,255,.12);--border-strong:rgba(255,255,255,.28);
+  --fill-accent:#85B7EB;--bg-accent:#0C447C;--text-accent:#B5D4F4;--border-accent:#85B7EB;
+}}
+*{box-sizing:border-box}
+body{margin:0;padding:1.5rem 1rem 3rem;background:var(--surface-2);color:var(--text-primary);font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;line-height:1.5}
+main{max-width:760px;margin:0 auto}
+h1{font-size:1.5rem;margin:0 0 .25rem}
+h2{font-size:1.05rem;margin:0 0 .5rem}
+.sub{color:var(--text-secondary);margin:0 0 1rem;font-size:15px}
+button{font:inherit;font-size:14px;color:var(--text-primary);background:transparent;border:.5px solid var(--border-strong);border-radius:var(--radius);padding:6px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+button:hover{background:var(--surface-1)}
+button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--fill-accent);outline-offset:2px}
+input[type=range]{accent-color:var(--fill-accent)}
+.row{display:flex;align-items:center;gap:12px;margin:0 0 10px}
+.lbl{font-size:14px;color:var(--text-secondary);min-width:120px}
+.pval{font-size:14px;font-weight:500;min-width:44px;text-align:right;font-family:var(--font-mono)}
+.pbar{flex:1;height:10px;background:var(--surface-1);border-radius:5px;overflow:hidden}
+.pfill{height:100%;background:var(--fill-accent);width:50%}
+.pfill.e{background:var(--e-fill)}
+.tag{font-size:12px;min-width:92px;color:var(--text-muted)}
+.tag.fixed{color:var(--teal)}
+.btns{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+.btns button.on{border-color:var(--border-accent);color:var(--text-accent);background:var(--bg-accent)}
+.key{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--text-secondary);margin:4px 0 0}
+.sw{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:6px}
+.res{font-family:var(--font-mono);font-size:13px;line-height:1.7;min-height:22px;word-break:break-word}
+.card{background:var(--surface-1);border-radius:var(--radius);padding:12px 14px}
+.card p{margin:0 0 6px;font-size:13px;color:var(--text-secondary)}
+section{margin-top:1.5rem;border-top:.5px solid var(--border);padding-top:1rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.eq{font-family:var(--font-mono);font-size:13.5px;line-height:1.8;overflow-wrap:anywhere}
+.eq b{color:var(--purple)}
+.note{font-size:13px;color:var(--text-secondary);margin:6px 0 0}
+details{margin:0 0 8px;border:.5px solid var(--border);border-radius:var(--radius);padding:8px 14px}
+summary{cursor:pointer;font-weight:500;font-size:15px}
+details p,details li{font-size:14px;color:var(--text-secondary);margin:.5rem 0 0}
+ol,ul{margin:.5rem 0 0;padding-left:1.25rem}
+canvas{width:100%;height:400px;cursor:grab;touch-action:none;display:block}
+footer{margin-top:2rem;font-size:12.5px;color:var(--text-muted)}
+a{color:var(--text-accent)}
+.dial{flex:none}
+@media (max-width:520px){.lbl{min-width:90px}.tag{display:none}}
+</style>
+</head>
+<body>
+<main>
+<h1>Spin precession: what rotates?</h1>
+<p class="sub">A spin-½ particle in a uniform magnetic field, H = ω₀S<sub>z</sub> (or ω₀S<sub>x</sub>). The math is two phases. The picture below is what those phases mean. Drag the sphere to rotate the view.</p>
+
+<div class="btns">
+  <button id="play" aria-label="Pause animation"></button>
+  <button id="bz" class="on">B along z</button>
+  <button id="bx">B along x</button>
+  <button id="vm" class="on">Vector model on</button>
+  <button id="s0">Start in |+⟩</button>
+  <button id="s90">Start in |+⟩ₓ</button>
+</div>
+<div class="row">
+  <label class="lbl" for="th">Initial angle θ from z</label>
+  <input type="range" id="th" min="0" max="180" step="1" value="50" style="flex:1">
+  <span class="pval" id="thv">50°</span>
+</div>
+
+<canvas id="cv" role="img" aria-label="Bloch sphere. A blue arrow, the spin direction n-hat, precesses on a cone around the magnetic field B. Teal vector-model arrows ride along with it."></canvas>
+<div class="key">
+  <span><span class="sw" style="background:var(--fill-accent)"></span>n̂(t): the direction where “up” is certain, length ħ/2</span>
+  <span><span class="sw" style="background:var(--teal)"></span>classical vector model: length √3·ħ/2, random azimuth</span>
+  <span><span class="sw" style="background:var(--purple)"></span>precession cone</span>
+  <span><span class="sw" style="background:var(--coral)"></span>B</span>
+</div>
+
+<section>
+  <h2>The math behind the motion</h2>
+  <div class="grid">
+    <div class="card">
+      <p>State in the energy basis. |E<sub>±</sub>⟩ = spin up/down along B.</p>
+      <div class="eq">|ψ(t)⟩ = e<sup>−iω₀t/2</sup>[ cos(α/2)|E₊⟩ + e<sup>i(φ₀+ω₀t)</sup> sin(α/2)|E₋⟩ ]</div>
+      <p class="note">α = angle between n̂ and B (fixed): <span class="eq" id="alpha">–</span>. The overall phase can't be observed.</p>
+    </div>
+    <div class="card" style="display:flex;gap:14px;align-items:center">
+      <svg class="dial" width="64" height="64" viewBox="-32 -32 64 64" aria-hidden="true">
+        <circle r="28" fill="none" stroke="var(--border-strong)" stroke-width="1"/>
+        <line x1="0" y1="0" x2="28" y2="0" stroke="var(--border)" stroke-width="1"/>
+        <line id="dl" x1="0" y1="0" x2="28" y2="0" stroke="var(--purple)" stroke-width="2.5" stroke-linecap="round"/>
+        <circle r="2.5" fill="var(--purple)"/>
+      </svg>
+      <div>
+        <p style="margin:0 0 4px;font-size:13px;color:var(--text-secondary)">Relative phase advance of the two energy amplitudes</p>
+        <div class="eq"><b id="dphi">0°</b></div>
+        <p class="note" id="phnote">This is the azimuth of n̂ around B.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>What stays fixed, what changes</h2>
+  <div class="row"><span class="lbl" style="min-width:60px">P(E₊)</span><div class="pbar"><div class="pfill e" id="fe"></div></div><span class="pval" id="ve"></span><span class="tag fixed">always fixed</span></div>
+  <div class="row"><span class="lbl" style="min-width:60px">P₊ₓ</span><div class="pbar"><div class="pfill" id="fx"></div></div><span class="pval" id="vx"></span><span class="tag" id="tx"></span></div>
+  <div class="row"><span class="lbl" style="min-width:60px">P₊ᵧ</span><div class="pbar"><div class="pfill" id="fy"></div></div><span class="pval" id="vy"></span><span class="tag" id="ty"></span></div>
+  <div class="row"><span class="lbl" style="min-width:60px">P₊z</span><div class="pbar"><div class="pfill" id="fz"></div></div><span class="pval" id="vz"></span><span class="tag" id="tz"></span></div>
+  <p class="note">Energy probabilities never change, because only phases evolve. An observable's probabilities change only if it doesn't commute with H and the state mixes its eigenstates.
+  <br>⟨S⟩ = (ħ/2)n̂ = <span class="eq" id="Sexp"></span> ħ</p>
+</section>
+
+<section>
+  <h2>Measurement simulator</h2>
+  <div class="btns" style="margin-bottom:8px">
+    <button id="mx">Measure Sₓ once</button>
+    <button id="mx50">Measure Sₓ 50 times</button>
+    <button id="clr">Clear</button>
+  </div>
+  <p class="note" style="margin:0 0 10px">Each shot uses a freshly prepared particle in the same initial state, evolved to the current time t, and then measured. Pause first so every shot uses the same t.</p>
+  <div class="grid">
+    <div class="card">
+      <p>Quantum outcomes (units of ħ)</p>
+      <div class="res" id="rq"></div>
+      <p style="color:var(--text-muted);margin:6px 0 0" id="sq"></p>
+    </div>
+    <div class="card">
+      <p>Vector-model outcomes (units of ħ)</p>
+      <div class="res" id="rc"></div>
+      <p style="color:var(--text-muted);margin:6px 0 0" id="sc"></p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Things to try</h2>
+  <ol>
+    <li>Click <b>Start in |+⟩</b> with B along z. Nothing moves. |+⟩ is an energy eigenstate, the “North Pole” of the rotation.</li>
+    <li>Set θ to about 50°. Now n̂ circles B. Which probability bar never moves, and why?</li>
+    <li>Click <b>Start in |+⟩ₓ</b>. P₊ₓ swings between 1 and 0, but P(E₊) stays at 50%. Watch the phase dial.</li>
+    <li>Switch to <b>B along x</b> and start in |+⟩. Now |+⟩ precesses. What matters is alignment with B, not which letter the axis has.</li>
+    <li>Measure Sₓ 50 times with the vector model on. The averages agree, but only one column ever shows just two values.</li>
+  </ol>
+</section>
+
+<section>
+  <h2>How to read this picture</h2>
+  <details open>
+    <summary>What exactly is rotating?</summary>
+    <p>The <em>state</em> is. At every instant the particle is in the “spin-up along n̂(t)” state, and n̂(t) sweeps around B at ω₀. The blue arrow is not a little spinning ball. It marks the one direction along which a Stern–Gerlach measurement would give “up” with certainty. The sphere is an abstract space of spin states, not the room.</p>
+  </details>
+  <details>
+    <summary>Why doesn't |+⟩ precess in a field along z?</summary>
+    <p>It points along the rotation axis, like the North Pole of a spinning globe. Equivalently, it's an energy eigenstate, so time evolution only multiplies it by an unobservable overall phase. Its azimuth is as meaningless as longitude at the pole.</p>
+  </details>
+  <details>
+    <summary>Why does the teal vector model stick out past the sphere?</summary>
+    <p>Every spin component measures to ±ħ/2, so S² = 3ħ²/4 and the “length” of the spin is √3·ħ/2. But only one component can be definite, so ⟨S⟩ has length just ħ/2. The teal arrows are the classical picture that reproduces both ⟨S⟩ and ⟨S²⟩. It fails because real outcomes are only ±ħ/2, not a continuous range, and because the uncertainty is not ignorance of a hidden value.</p>
+  </details>
+  <details>
+    <summary>How does this connect to classical Larmor precession?</summary>
+    <p>Ehrenfest's theorem gives d⟨S⟩/dt = γ⟨S⟩ × B, the classical torque equation. The expectation value precesses exactly as a classical magnetic moment would, at ω₀ = −γB₀. For an electron, γ &lt; 0, so ⟨μ⟩ points opposite to the arrow and precesses about the same axis.</p>
+  </details>
+  <details>
+    <summary>A 4π surprise</summary>
+    <p>After one period T = 2π/ω₀, n̂ is back where it started, but the state has picked up an overall factor of −1. The spinor needs 4π of rotation to return. The factor is unobservable here, but it is real.</p>
+  </details>
+</section>
+
+<footer>
+  Companion to the Hamiltonian chapter of McIntyre, <em>Quantum Mechanics</em> (Ch. 3), for PHY 360. ω₀ = 1.2 rad per second of animation time, a cosmetic choice. Everything runs in your browser from this one file, with no libraries.
+</footer>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+const cv=$('cv'),ctx=cv.getContext('2d');
+const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let theta=50*Math.PI/180,axis=[0,0,1],t=0,playing=!reduceMotion,va=-0.55,el=0.35,trail=[],showVM=true;
+const w0=1.2,S2=Math.SQRT2,phis=[0,0.9,1.7,2.6,3.3,4.1,4.9,5.6];
+let Q=[],C=[];
+
+const ICON={
+  pause:'<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><rect x="3" y="2" width="3" height="10" fill="currentColor"/><rect x="8" y="2" width="3" height="10" fill="currentColor"/></svg>',
+  play:'<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 2l9 5-9 5z" fill="currentColor"/></svg>'
+};
+const pb=$('play');
+function setPlayUI(){pb.innerHTML=(playing?ICON.pause+' Pause':ICON.play+' Play');pb.setAttribute('aria-label',playing?'Pause animation':'Play animation')}
+setPlayUI();
+
+function css(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim()||'#888'}
+function size(){const r=cv.getBoundingClientRect(),d=devicePixelRatio||1;cv.width=r.width*d;cv.height=r.height*d;ctx.setTransform(d,0,0,d,0,0)}
+size();addEventListener('resize',size);
+
+function cross(a,b){return[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]]}
+function dot(a,b){return a[0]*b[0]+a[1]*b[1]+a[2]*b[2]}
+function norm(a){const l=Math.hypot(...a);return a.map(v=>v/l)}
+
+// Spin direction n(t): initial n0 = (sin θ, 0, cos θ), rotated about the B axis by angle w0*t (Rodrigues), counterclockwise as in φ(t) = φ0 + ω0 t.
+function nAt(tt){const n0=[Math.sin(theta),0,Math.cos(theta)],c=Math.cos(w0*tt),s=Math.sin(w0*tt),k=cross(axis,n0),d=dot(axis,n0);return[0,1,2].map(i=>n0[i]*c+k[i]*s+axis[i]*d*(1-c))}
+// Orthonormal basis perpendicular to n, for building the vector-model cone.
+function basis(n){let u=cross(axis,n);if(Math.hypot(...u)<1e-3)u=cross(n,Math.abs(n[0])<0.9?[1,0,0]:[0,1,0]);u=norm(u);return[u,cross(n,u)]}
+// Vector-model vector (units of ħ/2): component 1 along n, √2 perpendicular, so length √3.
+function vmVec(n,phi){const[u,v]=basis(n);return[0,1,2].map(i=>n[i]+S2*(Math.cos(phi)*u[i]+Math.sin(phi)*v[i]))}
+
+function proj(p){const W=cv.clientWidth,H=cv.clientHeight,R=Math.min(W,H)*0.25;const x1=p[0]*Math.cos(va)-p[1]*Math.sin(va),y1=p[0]*Math.sin(va)+p[1]*Math.cos(va);const up=p[2]*Math.cos(el)-x1*Math.sin(el);return{x:W/2+y1*R,y:H/2-up*R,R}}
+function line(a,b,col,wd,dash){const A=proj(a),B=proj(b);ctx.strokeStyle=col;ctx.lineWidth=wd;ctx.setLineDash(dash||[]);ctx.beginPath();ctx.moveTo(A.x,A.y);ctx.lineTo(B.x,B.y);ctx.stroke();ctx.setLineDash([])}
+function arrow(a,b,col,wd){line(a,b,col,wd);const A=proj(a),B=proj(b),an=Math.atan2(B.y-A.y,B.x-A.x),h=10;ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(B.x,B.y);ctx.lineTo(B.x-h*Math.cos(an-0.4),B.y-h*Math.sin(an-0.4));ctx.lineTo(B.x-h*Math.cos(an+0.4),B.y-h*Math.sin(an+0.4));ctx.closePath();ctx.fill()}
+function poly(pts,col,wd,dash){ctx.strokeStyle=col;ctx.lineWidth=wd;ctx.setLineDash(dash||[]);ctx.beginPath();pts.forEach((p,i)=>{const q=proj(p);i?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y)});ctx.stroke();ctx.setLineDash([])}
+function label(p,txt,col){const q=proj(p);ctx.fillStyle=col;ctx.font='13px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(txt,q.x,q.y)}
+
+function draw(){
+  const W=cv.clientWidth,H=cv.clientHeight,tc=css('--text-secondary'),bc=css('--border-strong'),ac=css('--fill-accent'),coral=css('--coral'),purple=css('--purple'),teal=css('--teal');
+  ctx.clearRect(0,0,W,H);const o=proj([0,0,0]);
+  ctx.strokeStyle=bc;ctx.lineWidth=1;ctx.beginPath();ctx.arc(o.x,o.y,o.R,0,Math.PI*2);ctx.stroke();
+  const eq=[];for(let i=0;i<=64;i++){const a=i/64*Math.PI*2;eq.push([Math.cos(a),Math.sin(a),0])}poly(eq,bc,1,[3,4]);
+  [[1,0,0,'x'],[0,1,0,'y'],[0,0,1,'z']].forEach(a=>{line([-a[0]*1.3,-a[1]*1.3,-a[2]*1.3],[a[0]*1.3,a[1]*1.3,a[2]*1.3],bc,1);label([a[0]*1.42,a[1]*1.42,a[2]*1.42],a[3],tc)});
+  arrow(axis.map(v=>v*1.75),axis.map(v=>v*2.15),coral,2.5);label(axis.map(v=>v*2.3),'B',coral);
+  const cone=[];for(let i=0;i<=80;i++)cone.push(nAt(i/80*2*Math.PI/w0));poly(cone,purple,1.5,[5,4]);
+  if(trail.length>1)poly(trail,purple,2.5);
+  const n=nAt(t);
+  if(showVM){
+    const ring=[];for(let i=0;i<=64;i++)ring.push(vmVec(n,i/64*Math.PI*2));poly(ring,teal,1.2,[4,3]);
+    ctx.globalAlpha=0.55;phis.forEach(p=>line([0,0,0],vmVec(n,p),teal,1.3));ctx.globalAlpha=1;
+    line(n,vmVec(n,phis[2]),teal,1,[2,3]);
+  }
+  arrow([0,0,0],n,ac,3);
+  readouts(n);
+}
+
+// Readouts: P(+ along axis i) = (1 + n_i)/2; energy probabilities from the angle between n and B.
+const AX=['x','y','z'];
+function readouts(n){
+  [['x',0],['y',1],['z',2]].forEach(([k,i])=>{const P=(1+n[i])/2;$('f'+k).style.width=(P*100)+'%';$('v'+k).textContent=P.toFixed(2)});
+  const ca=Math.max(-1,Math.min(1,dot(n,axis))),PE=(1+ca)/2,alpha=Math.acos(ca),stationary=Math.sin(alpha)<1e-6;
+  $('fe').style.width=(PE*100)+'%';$('ve').textContent=PE.toFixed(2);
+  const ai=axis.findIndex(v=>v===1);
+  AX.forEach((k,i)=>{const e=$('t'+k),fixed=stationary||i===ai;e.textContent=fixed?'[S'+k+', H] = 0':'changes';e.className='tag'+(fixed?' fixed':'')});
+  $('alpha').textContent=(alpha*180/Math.PI).toFixed(0)+'°';
+  $('Sexp').textContent='('+n.map(v=>fmt(v/2)).join(', ')+')';
+  const dphi=((w0*t)%(2*Math.PI)+2*Math.PI)%(2*Math.PI);
+  if(stationary){$('dphi').textContent='undefined';$('dl').setAttribute('stroke-opacity','.25');$('phnote').textContent='One amplitude is zero, so there is no relative phase to advance. This is a stationary state.'}
+  else{$('dphi').textContent=(dphi*180/Math.PI).toFixed(0)+'°';$('dl').setAttribute('stroke-opacity','1');$('phnote').textContent='This is the azimuth of n̂ around B. One full turn per period 2π/ω₀.'}
+  $('dl').setAttribute('transform','rotate('+(-dphi*180/Math.PI)+')');
+}
+
+let last=performance.now();
+function loop(now){const dt=Math.min(0.05,(now-last)/1000);last=now;if(playing){t+=dt;trail.push(nAt(t));if(trail.length>40)trail.shift()}draw();requestAnimationFrame(loop)}
+requestAnimationFrame(loop);
+
+function fmt(v){return(v>=0?'+':'')+v.toFixed(2)}
+// Quantum: ±ħ/2 with P+x = (1+n_x)/2. Vector model: x-component of a random cone vector, in units of ħ.
+function measure(k){const n=nAt(t),P=(1+n[0])/2;for(let i=0;i<k;i++){Q.push(Math.random()<P?0.5:-0.5);C.push(vmVec(n,Math.random()*Math.PI*2)[0]/2)}render()}
+function stats(a){if(!a.length)return'';const m=a.reduce((s,v)=>s+v,0)/a.length,lo=Math.min(...a),hi=Math.max(...a);return a.length+' shots, mean '+fmt(m)+', range '+fmt(lo)+' to '+fmt(hi)}
+function render(){$('rq').textContent=Q.slice(-24).map(fmt).join('  ');$('rc').textContent=C.slice(-24).map(fmt).join('  ');$('sq').textContent=stats(Q);$('sc').textContent=stats(C)}
+$('mx').onclick=()=>measure(1);
+$('mx50').onclick=()=>measure(50);
+$('clr').onclick=()=>{Q=[];C=[];render()};
+
+const th=$('th'),thv=$('thv');
+function reset(){t=0;trail=[]}
+function setTheta(d){th.value=d;thv.textContent=d+'°';theta=d*Math.PI/180;reset()}
+th.oninput=()=>setTheta(+th.value);
+$('s0').onclick=()=>setTheta(0);
+$('s90').onclick=()=>setTheta(90);
+const bz=$('bz'),bx=$('bx'),vm=$('vm');
+bz.onclick=()=>{axis=[0,0,1];bz.classList.add('on');bx.classList.remove('on');reset()};
+bx.onclick=()=>{axis=[1,0,0];bx.classList.add('on');bz.classList.remove('on');reset()};
+vm.onclick=()=>{showVM=!showVM;vm.classList.toggle('on',showVM);vm.textContent=showVM?'Vector model on':'Vector model off'};
+pb.onclick=()=>{playing=!playing;setPlayUI()};
+
+let drag=null;
+cv.onpointerdown=e=>{drag={x:e.clientX,y:e.clientY,va,el};cv.setPointerCapture(e.pointerId);cv.style.cursor='grabbing'};
+cv.onpointermove=e=>{if(!drag)return;va=drag.va-(e.clientX-drag.x)*0.01;el=Math.max(-1.3,Math.min(1.3,drag.el+(e.clientY-drag.y)*0.01))};
+cv.onpointerup=()=>{drag=null;cv.style.cursor='grab'};
+</script>
+</body>
+</html>
