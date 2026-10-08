@@ -59,13 +59,13 @@ canvas{width:100%;height:400px;cursor:grab;touch-action:none;display:block}
 footer{margin-top:2rem;font-size:12.5px;color:var(--text-muted)}
 a{color:var(--text-accent)}
 .dial{flex:none}
-@media (max-width:520px){.lbl{min-width:90px}.tag{display:none}}
+@media (max-width:520px){.lbl{min-width:90px}.prow{flex-wrap:wrap;row-gap:2px}.prow .tag{flex-basis:100%;padding-left:72px}}
 </style>
 </head>
 <body>
 <main>
 <h1>Spin precession: what rotates?</h1>
-<p class="sub">A spin-½ particle in a uniform magnetic field, H = ω₀S<sub>z</sub> (or ω₀S<sub>x</sub>). The math is two phases. The picture below is what those phases mean. Drag the sphere to rotate the view.</p>
+<p class="sub">A spin-½ particle in a uniform magnetic field, H = ω₀S<sub>z</sub> (or ω₀S<sub>x</sub>). The math is two phases. The picture below is what those phases mean. Drag the sphere, or click it and use the arrow keys, to rotate the view.</p>
 
 <div class="btns">
   <button id="play" aria-label="Pause animation"></button>
@@ -81,7 +81,7 @@ a{color:var(--text-accent)}
   <span class="pval" id="thv">50°</span>
 </div>
 
-<canvas id="cv" role="img" aria-label="Bloch sphere. A blue arrow, the spin direction n-hat, precesses on a cone around the magnetic field B. Teal vector-model arrows ride along with it."></canvas>
+<canvas id="cv" tabindex="0" role="img" aria-label="Bloch sphere. A blue arrow, the spin direction n-hat, precesses on a cone around the magnetic field B. Teal vector-model arrows ride along with it. Drag, or use the arrow keys, to rotate the view."></canvas>
 <div class="key">
   <span><span class="sw" style="background:var(--fill-accent)"></span>n̂(t): the direction where “up” is certain, length ħ/2</span>
   <span><span class="sw" style="background:var(--teal)"></span>classical vector model: length √3·ħ/2, random azimuth</span>
@@ -99,10 +99,10 @@ a{color:var(--text-accent)}
     </div>
     <div class="card" style="display:flex;gap:14px;align-items:center">
       <svg class="dial" width="64" height="64" viewBox="-32 -32 64 64" aria-hidden="true">
-        <circle r="28" fill="none" stroke="var(--border-strong)" stroke-width="1"/>
-        <line x1="0" y1="0" x2="28" y2="0" stroke="var(--border)" stroke-width="1"/>
-        <line id="dl" x1="0" y1="0" x2="28" y2="0" stroke="var(--purple)" stroke-width="2.5" stroke-linecap="round"/>
-        <circle r="2.5" fill="var(--purple)"/>
+        <circle r="28" style="fill:none;stroke:var(--border-strong);stroke-width:1"/>
+        <line x1="0" y1="0" x2="28" y2="0" style="stroke:var(--border-strong);stroke-width:1;stroke-dasharray:2 3"/>
+        <line id="dl" x1="0" y1="0" x2="28" y2="0" style="stroke:var(--purple);stroke-width:2.5;stroke-linecap:round"/>
+        <circle r="2.5" style="fill:var(--purple)"/>
       </svg>
       <div>
         <p style="margin:0 0 4px;font-size:13px;color:var(--text-secondary)">Relative phase advance of the two energy amplitudes</p>
@@ -115,11 +115,11 @@ a{color:var(--text-accent)}
 
 <section>
   <h2>What stays fixed, what changes</h2>
-  <div class="row"><span class="lbl" style="min-width:60px">P(E₊)</span><div class="pbar"><div class="pfill e" id="fe"></div></div><span class="pval" id="ve"></span><span class="tag fixed">always fixed</span></div>
-  <div class="row"><span class="lbl" style="min-width:60px">P₊ₓ</span><div class="pbar"><div class="pfill" id="fx"></div></div><span class="pval" id="vx"></span><span class="tag" id="tx"></span></div>
-  <div class="row"><span class="lbl" style="min-width:60px">P₊ᵧ</span><div class="pbar"><div class="pfill" id="fy"></div></div><span class="pval" id="vy"></span><span class="tag" id="ty"></span></div>
-  <div class="row"><span class="lbl" style="min-width:60px">P₊z</span><div class="pbar"><div class="pfill" id="fz"></div></div><span class="pval" id="vz"></span><span class="tag" id="tz"></span></div>
-  <p class="note">Energy probabilities never change, because only phases evolve. An observable's probabilities change only if it doesn't commute with H and the state mixes its eigenstates.
+  <div class="row prow"><span class="lbl" style="min-width:60px">P(E₊)</span><div class="pbar"><div class="pfill e" id="fe"></div></div><span class="pval" id="ve"></span><span class="tag fixed">always fixed</span></div>
+  <div class="row prow"><span class="lbl" style="min-width:60px">P₊ₓ</span><div class="pbar"><div class="pfill" id="fx"></div></div><span class="pval" id="vx"></span><span class="tag" id="tx"></span></div>
+  <div class="row prow"><span class="lbl" style="min-width:60px">P₊ᵧ</span><div class="pbar"><div class="pfill" id="fy"></div></div><span class="pval" id="vy"></span><span class="tag" id="ty"></span></div>
+  <div class="row prow"><span class="lbl" style="min-width:60px">P₊z</span><div class="pbar"><div class="pfill" id="fz"></div></div><span class="pval" id="vz"></span><span class="tag" id="tz"></span></div>
+  <p class="note">Energy probabilities never change, because only phases evolve (and P(E₋) = 1 − P(E₊)). Any other probability can change only if its observable doesn't commute with H <em>and</em> the state is not an energy eigenstate.
   <br>⟨S⟩ = (ħ/2)n̂ = <span class="eq" id="Sexp"></span> ħ</p>
 </section>
 
@@ -130,7 +130,7 @@ a{color:var(--text-accent)}
     <button id="mx50">Measure Sₓ 50 times</button>
     <button id="clr">Clear</button>
   </div>
-  <p class="note" style="margin:0 0 10px">Each shot uses a freshly prepared particle in the same initial state, evolved to the current time t, and then measured. Pause first so every shot uses the same t.</p>
+  <p class="note" style="margin:0 0 10px">Each shot uses a freshly prepared particle in the same initial state, evolved to the current time t, and then measured. It is not one particle measured over and over. Pause to keep t the same across clicks.</p>
   <div class="grid">
     <div class="card">
       <p>Quantum outcomes (units of ħ)</p>
@@ -150,9 +150,9 @@ a{color:var(--text-accent)}
   <ol>
     <li>Click <b>Start in |+⟩</b> with B along z. Nothing moves. |+⟩ is an energy eigenstate, the “North Pole” of the rotation.</li>
     <li>Set θ to about 50°. Now n̂ circles B. Which probability bar never moves, and why?</li>
-    <li>Click <b>Start in |+⟩ₓ</b>. P₊ₓ swings between 1 and 0, but P(E₊) stays at 50%. Watch the phase dial.</li>
-    <li>Switch to <b>B along x</b> and start in |+⟩. Now |+⟩ precesses. What matters is alignment with B, not which letter the axis has.</li>
-    <li>Measure Sₓ 50 times with the vector model on. The averages agree, but only one column ever shows just two values.</li>
+    <li>Still with B along z, click <b>Start in |+⟩ₓ</b>. P₊ₓ swings between 1 and 0, but P(E₊) stays at 50%. Watch the phase dial.</li>
+    <li>Switch to <b>B along x</b> and start in |+⟩. Now |+⟩ precesses. Then try |+⟩ₓ, which now sits still. What matters is alignment with B, not which letter the axis has.</li>
+    <li>Go back to B along z and |+⟩. Pause, then measure Sₓ 50 times with the vector model on. The averages agree, but only one column ever shows just two values.</li>
   </ol>
 </section>
 
@@ -160,7 +160,7 @@ a{color:var(--text-accent)}
   <h2>How to read this picture</h2>
   <details open>
     <summary>What exactly is rotating?</summary>
-    <p>The <em>state</em> is. At every instant the particle is in the “spin-up along n̂(t)” state, and n̂(t) sweeps around B at ω₀. The blue arrow is not a little spinning ball. It marks the one direction along which a Stern–Gerlach measurement would give “up” with certainty. The sphere is an abstract space of spin states, not the room.</p>
+    <p>The <em>state</em> is. At every instant the particle is in the “spin-up along n̂(t)” state, and n̂(t) sweeps around B at ω₀. The blue arrow is not a little spinning ball. It marks the one direction along which a Stern–Gerlach measurement would give “up” with certainty. Each point on the sphere labels a state. For spin-½ only, that label happens to be a real direction in the lab: the way you'd have to point the analyzer.</p>
   </details>
   <details>
     <summary>Why doesn't |+⟩ precess in a field along z?</summary>
@@ -176,7 +176,7 @@ a{color:var(--text-accent)}
   </details>
   <details>
     <summary>A 4π surprise</summary>
-    <p>After one period T = 2π/ω₀, n̂ is back where it started, but the state has picked up an overall factor of −1. The spinor needs 4π of rotation to return. The factor is unobservable here, but it is real.</p>
+    <p>After one period T = 2π/ω₀, n̂ is back where it started, but the state has picked up an overall factor of −1. The spinor needs 4π of rotation to return. An overall sign can't be seen in a single beam, but it shows up when a precessed beam interferes with an unprecessed one. Neutron interferometry experiments in 1975 measured exactly this.</p>
   </details>
 </section>
 
@@ -248,7 +248,8 @@ function readouts(n){
   const ca=Math.max(-1,Math.min(1,dot(n,axis))),PE=(1+ca)/2,alpha=Math.acos(ca),stationary=Math.sin(alpha)<1e-6;
   $('fe').style.width=(PE*100)+'%';$('ve').textContent=PE.toFixed(2);
   const ai=axis.findIndex(v=>v===1);
-  AX.forEach((k,i)=>{const e=$('t'+k),fixed=stationary||i===ai;e.textContent=fixed?'[S'+k+', H] = 0':'changes';e.className='tag'+(fixed?' fixed':'')});
+  // Fixed either because S_i commutes with H, or because the state is an energy eigenstate. These are different reasons.
+  AX.forEach((k,i)=>{const e=$('t'+k),comm=i===ai,fixed=comm||stationary;e.textContent=comm?'fixed: [S'+k+', H] = 0':stationary?'fixed: stationary state':'changes';e.className='tag'+(fixed?' fixed':'')});
   $('alpha').textContent=(alpha*180/Math.PI).toFixed(0)+'°';
   $('Sexp').textContent='('+n.map(v=>fmt(v/2)).join(', ')+')';
   const dphi=((w0*t)%(2*Math.PI)+2*Math.PI)%(2*Math.PI);
@@ -261,7 +262,7 @@ let last=performance.now();
 function loop(now){const dt=Math.min(0.05,(now-last)/1000);last=now;if(playing){t+=dt;trail.push(nAt(t));if(trail.length>40)trail.shift()}draw();requestAnimationFrame(loop)}
 requestAnimationFrame(loop);
 
-function fmt(v){return(v>=0?'+':'')+v.toFixed(2)}
+function fmt(v){const r=Math.round(v*100)/100||0;return(r>=0?'+':'')+r.toFixed(2)}
 // Quantum: ±ħ/2 with P+x = (1+n_x)/2. Vector model: x-component of a random cone vector, in units of ħ.
 function measure(k){const n=nAt(t),P=(1+n[0])/2;for(let i=0;i<k;i++){Q.push(Math.random()<P?0.5:-0.5);C.push(vmVec(n,Math.random()*Math.PI*2)[0]/2)}render()}
 function stats(a){if(!a.length)return'';const m=a.reduce((s,v)=>s+v,0)/a.length,lo=Math.min(...a),hi=Math.max(...a);return a.length+' shots, mean '+fmt(m)+', range '+fmt(lo)+' to '+fmt(hi)}
@@ -286,6 +287,7 @@ let drag=null;
 cv.onpointerdown=e=>{drag={x:e.clientX,y:e.clientY,va,el};cv.setPointerCapture(e.pointerId);cv.style.cursor='grabbing'};
 cv.onpointermove=e=>{if(!drag)return;va=drag.va-(e.clientX-drag.x)*0.01;el=Math.max(-1.3,Math.min(1.3,drag.el+(e.clientY-drag.y)*0.01))};
 cv.onpointerup=()=>{drag=null;cv.style.cursor='grab'};
+cv.onkeydown=e=>{const d={ArrowLeft:[0.1,0],ArrowRight:[-0.1,0],ArrowUp:[0,-0.1],ArrowDown:[0,0.1]}[e.key];if(!d)return;e.preventDefault();va+=d[0];el=Math.max(-1.3,Math.min(1.3,el+d[1]))};
 </script>
 </body>
 </html>
